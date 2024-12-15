@@ -1,35 +1,53 @@
 "use strict";
 
-// Define the colors and corner radius
 const strokeColor = hexToRgb('#9747FF');
 const fillColor = hexToRgb('#0F1014');
 const cornerRadius = 20;
 const strokeWeight = 2;
-const dashPattern = [10, 5]; // Define the dash and gap pattern
+const dashPattern = [10, 5]; // Define dash pattern (10px dash followed by 5px gap)
 const selectedNodes = figma.currentPage.selection;
 
 if (selectedNodes.length > 0) {
     selectedNodes.forEach(node => {
-        // Check if the node supports fills and strokes
-        if ('fills' in node && 'strokes' in node) {
-            node.fills = [{ type: 'SOLID', color: fillColor }];
-            node.strokes = [{ type: 'SOLID', color: strokeColor }];
-        }
-        
-        // Check if the node supports strokeWeight and strokeDashes
-        if ('strokeWeight' in node && 'strokeDashes' in node) {
-            node.strokeWeight = strokeWeight; // Set the stroke weight
-            node.strokeDashes = dashPattern; // Set the dash pattern
+        // Check if the node supports fills
+        if ('fills' in node) {
+            node.fills = [{ 
+                type: 'SOLID', 
+                visible: true, 
+                opacity: 1, 
+                blendMode: 'NORMAL', 
+                color: fillColor 
+            }];
         }
 
-        // Check if the node supports cornerRadius by checking its type
+        // Check if the node supports strokes
+        if ('strokes' in node && (node.type === 'LINE' || node.type === 'RECTANGLE' || node.type === 'FRAME' || node.type === 'COMPONENT_SET' || node.type === 'COMPONENT')) {
+            node.strokes = [{ 
+                type: 'SOLID', 
+                visible: true, 
+                opacity: 1, 
+                blendMode: 'NORMAL', 
+                color: strokeColor 
+            }];
+            node.strokeWeight = strokeWeight; // Set stroke weight
+            
+            // Set the dash pattern for dashed strokes
+            if ('dashPattern' in node) {
+                node.dashPattern = dashPattern; // Set dash pattern (e.g., [10, 5])
+            }
+        } else if ('strokes' in node) {
+            // If there are no strokes, create an empty array for strokes
+            node.strokes = [];
+        }
+
+        // Set corner radius for applicable nodes
         if (node.type === 'RECTANGLE' || node.type === 'FRAME' || node.type === 'COMPONENT_SET' || node.type === 'COMPONENT') {
-            node.cornerRadius = cornerRadius;
+            node.cornerRadius = cornerRadius; // Set corner radius
         }
     });
-    figma.notify('Colors, stroke, and corner radius applied successfully.');
+    figma.notify('Component Set is Styled 😎');
 } else {
-    figma.notify('Please select at least one component.');
+    figma.notify('Select alteast one Component Set 💤');
 }
 
 figma.closePlugin();
